@@ -1,0 +1,20 @@
+server:
+  port: 8010
+
+logging:
+  level:
+    org:
+      apache:
+        kafka: DEBUG
+spring:
+  application:
+    name: productDetailsService
+
+
+  #Local MongoDB config
+  data:
+    mongodb:
+      #uri: mongodb://localhost:27017/lowes
+      database: lowes
+      port: 27017
+      host: localhost
