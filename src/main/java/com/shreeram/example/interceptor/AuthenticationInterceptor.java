@@ -15,15 +15,13 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        System.out.println("inside header..");
         String authHeader = request.getHeader("Authorization");
-        request.getHeaderNames().asIterator().forEachRemaining(System.out::println);
+
         if (authHeader != null && authHeader.startsWith("Basic ")) {
             String base64Credentials = authHeader.substring("Basic ".length()).trim();
             String credentials = new String(Base64.getDecoder().decode(base64Credentials));
             String[] values = credentials.split(":", 2);
 
-            System.out.println(values[0] + "," + values[1]);
             String username = values[0];
             String password = values[1];
 
