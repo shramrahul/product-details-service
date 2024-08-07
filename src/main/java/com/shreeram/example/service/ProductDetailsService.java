@@ -4,6 +4,9 @@ import com.shreeram.example.exception.ProductNotFoundException;
 import com.shreeram.example.model.ProductDetails;
 import com.shreeram.example.repository.ProductDetailsRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,18 +24,22 @@ public class ProductDetailsService {
         this.kafkaProducerService = kafkaProducerService;
     }
 
+    @Cacheable("products")
     public List<ProductDetails> getAllProducts() {
         return productDetailsRepository.findAll();
     }
 
+    @Cacheable(value = "product", key = "#id")
     public Optional<ProductDetails> getAllProductsById(String id) {
         return productDetailsRepository.findById(id);
     }
 
+    @CachePut(value = "product", key = "#productDetails.id")
     public ProductDetails addProductDetails(ProductDetails productDetails) {
        return productDetailsRepository.save(productDetails);
     }
 
+    @CachePut(value = "product", key = "#id")
     public void updateProductPrice(String id, int newPrice) {
         Optional<ProductDetails> optionalProduct = productDetailsRepository.findById(id);
         if (optionalProduct.isPresent()) {
@@ -48,6 +55,7 @@ public class ProductDetailsService {
         }
     }
 
+    @CacheEvict(value = "product", key = "#id")
     public void deleteProductById(String id) {
         productDetailsRepository.deleteById(id);
     }
