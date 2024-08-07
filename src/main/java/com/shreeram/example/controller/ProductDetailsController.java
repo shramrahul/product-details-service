@@ -24,6 +24,7 @@ public class ProductDetailsController {
     }
 
     @GetMapping
+    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<List<ProductDetails>> getAllProducts() {
         List<ProductDetails> products = productDetailsService.getAllProducts();
         return ResponseEntity.ok(products);
@@ -38,8 +39,14 @@ public class ProductDetailsController {
 
     @PostMapping
     public ResponseEntity<ProductDetails> addProductDetails(@RequestBody ProductDetails productDetails) {
-        ProductDetails createdProduct = productDetailsService.addProductDetails(productDetails);
-        return ResponseEntity.ok(createdProduct);
+        System.out.println("i am here in post call...");
+        try {
+            ProductDetails createdProduct = productDetailsService.addProductDetails(productDetails);
+            return ResponseEntity.ok(createdProduct);
+        } catch (Exception ex) {
+            System.out.println(ex);
+            return (ResponseEntity<ProductDetails>) ResponseEntity.internalServerError();
+        }
     }
 
     @PutMapping("/{id}/price")

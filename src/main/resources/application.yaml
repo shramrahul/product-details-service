@@ -17,4 +17,4 @@ spring:
       #uri: mongodb://localhost:27017/lowes
       database: lowes
       port: 27017
-      host: localhost
+      host: mongo
