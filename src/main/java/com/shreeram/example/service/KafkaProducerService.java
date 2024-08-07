@@ -1,12 +1,13 @@
 package com.shreeram.example.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shreeram.example.exception.KafkaTransportException;
-import com.shreeram.example.model.KafkaMessage;
+import com.shreeram.example.model.ProductDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -20,30 +21,38 @@ public class KafkaProducerService {
         this.objectMapper = objectMapper;
     }
 
-    public void sendPriceChangeMessage(String id, int newPrice) {
-        String message = null;
-        try {
-          //  message = objectMapper.writeValueAsString(KafkaMessage.builder().productId(id).newPrice(String.valueOf(newPrice)).build());
-            message = id+","+newPrice;
-            System.out.println(message);
-            // Send the message asynchronously
-            String finalMessage = message;
-            kafkaTemplate.send(PRICE_CHANGE_TOPIC, message)
-                    .whenComplete((result, ex) -> {
-                        if (ex != null) {
-                            // Handle failure
-                            System.out.println("Unable to send message=[ {} ] due to : {} " + ex.getMessage());
-                            log.error("Unable to send message=[ {} ] due to : {} ", finalMessage,  ex.getMessage());
-                            throw new KafkaTransportException("Failed to send Kafka message", ex);
-                        } else {
-                            // Handle success
-                            log.info("Sent message=[ {} ] with offset=[ {} ]", finalMessage, result.getRecordMetadata().offset());
-                        }
-                    });
-        } catch (Exception e) {
-            System.out.println(e);
-            throw new RuntimeException(e);
-        }
+    @Async
+    public void sendPriceChangeMessage(ProductDetails productDetails) {
+        log.info("sendPriceChangeMessage in thread: {}", Thread.currentThread().getName());
+        sendMessageToKafka(productDetails)
+            .whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("Failed to send Kafka message", ex);
+                    throw new KafkaTransportException("Failed to send Kafka message", ex);
+                } else {
+                    log.info("Kafka message sent successfully");
+                }
+            });
+    }
 
+    public CompletableFuture<Void> sendMessageToKafka(ProductDetails productDetails) {
+        try {
+            String message = objectMapper.writeValueAsString(productDetails);
+            log.info("Prepared message: {}", message);
+
+            // Send the message asynchronously and return a CompletableFuture
+            return kafkaTemplate.send(PRICE_CHANGE_TOPIC, message)
+                    .thenAccept(result ->
+                            log.info("Sent message [{}] with offset [{}]", message, result.getRecordMetadata().offset())
+                    )
+                    .exceptionally(ex -> {
+                        log.error("Failed to send message [{}] due to: {}", message, ex.getMessage(), ex);
+                        return null;
+                    });
+
+        } catch (Exception e) {
+            log.error("Error preparing message", e);
+            return CompletableFuture.failedFuture(new RuntimeException("Error preparing message", e));
+        }
     }
 }

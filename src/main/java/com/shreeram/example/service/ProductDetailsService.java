@@ -3,12 +3,14 @@ package com.shreeram.example.service;
 import com.shreeram.example.exception.ProductNotFoundException;
 import com.shreeram.example.model.ProductDetails;
 import com.shreeram.example.repository.ProductDetailsRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ProductDetailsService {
 
     private final ProductDetailsRepository productDetailsRepository;
@@ -34,8 +36,12 @@ public class ProductDetailsService {
     public void updateProductPrice(String id, int newPrice) {
         Optional<ProductDetails> optionalProduct = productDetailsRepository.findById(id);
         if (optionalProduct.isPresent()) {
-            // Send price change message to Kafka
-            kafkaProducerService.sendPriceChangeMessage(id, newPrice);
+            ProductDetails productDetails = optionalProduct.get();
+            productDetails.setPrice(newPrice);
+            productDetails = productDetailsRepository.save(productDetails);
+            log.info("main task in thread: {}", Thread.currentThread().getName());
+
+            kafkaProducerService.sendPriceChangeMessage(productDetails);
 
         } else {
             throw new ProductNotFoundException("Product not found with id: " + id);

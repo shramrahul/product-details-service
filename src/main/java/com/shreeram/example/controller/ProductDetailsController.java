@@ -24,13 +24,20 @@ public class ProductDetailsController {
     }
 
     @GetMapping
-    @CrossOrigin(origins = "http://localhost:3000")
+ //  @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<List<ProductDetails>> getAllProducts() {
         List<ProductDetails> products = productDetailsService.getAllProducts();
         return ResponseEntity.ok(products);
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/auth")
+    //  @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<List<ProductDetails>> getAllAuthenticatedProducts() {
+        List<ProductDetails> products = productDetailsService.getAllProducts();
+        return ResponseEntity.ok(products);
+    }
+
+  //  @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/{id}")
     public ResponseEntity<ProductDetails> getProductById(@PathVariable String id) {
         Optional<ProductDetails> product = productDetailsService.getAllProductsById(id);
@@ -39,18 +46,12 @@ public class ProductDetailsController {
 
     @PostMapping
     public ResponseEntity<ProductDetails> addProductDetails(@RequestBody ProductDetails productDetails) {
-        System.out.println("i am here in post call...");
-        try {
-            ProductDetails createdProduct = productDetailsService.addProductDetails(productDetails);
-            return ResponseEntity.ok(createdProduct);
-        } catch (Exception ex) {
-            System.out.println(ex);
-            return (ResponseEntity<ProductDetails>) ResponseEntity.internalServerError();
-        }
+        ProductDetails createdProduct = productDetailsService.addProductDetails(productDetails);
+        return ResponseEntity.ok(createdProduct);
     }
 
     @PutMapping("/{id}/price")
-    @CrossOrigin(origins = "http://localhost:3000")
+  //  @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<Object> updateProductPrice(@PathVariable String id, @RequestParam int newPrice) {
         productDetailsService.updateProductPrice(id, newPrice);
         Map<String, String> response = new HashMap<>();

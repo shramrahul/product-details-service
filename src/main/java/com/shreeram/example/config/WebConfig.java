@@ -16,16 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Allow all paths
-                .allowedOrigins("http://localhost:3000") // Add allowed origins
-                .allowedMethods("*") // Allowed methods
-                .allowedHeaders("*") // Allowed headers
-                .allowCredentials(true); // Allow credentials
-    }
-
-/*    @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authenticationInterceptor);
-    }*/
+        registry.addInterceptor(authenticationInterceptor).addPathPatterns("*/auth");
+    }
 }

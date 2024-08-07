@@ -16,22 +16,20 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String authHeader = request.getHeader("Authorization");
-        System.out.println(authHeader);
+
         if (authHeader != null && authHeader.startsWith("Basic ")) {
-            String credentials = authHeader.substring("Basic ".length()).trim();
+            // Decode the Base64 encoded credentials
+            String base64Credentials = authHeader.substring("Basic ".length());
+            String credentials = new String(Base64.getDecoder().decode(base64Credentials));
             String[] values = credentials.split(":", 2);
 
-            String username = values[0];
-            String password = values[1];
-            System.out.println(values[0] + ":" + values[1]);
-            if (EXPECTED_USERNAME.equals(username) && EXPECTED_PASSWORD.equals(password)) {
-                return true; // Allow the request
+            // Validate the credentials
+            if ("admin".equals(values[0]) && "admin".equals(values[1])) {
+                return true;
             }
         }
 
-        // If authentication fails, respond with 401 Unauthorized
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("Unauthorized");
         return false;
     }
 }
