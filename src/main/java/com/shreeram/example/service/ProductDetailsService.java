@@ -41,11 +41,15 @@ public class ProductDetailsService {
 
     @CachePut(value = "product", key = "#id")
     public void updateProductPrice(String id, int newPrice) {
+        log.info("Updating product with ID: {} and new price: {}", id, newPrice);
+
         Optional<ProductDetails> optionalProduct = productDetailsRepository.findById(id);
         if (optionalProduct.isPresent()) {
             ProductDetails productDetails = optionalProduct.get();
             productDetails.setPrice(newPrice);
             productDetails = productDetailsRepository.save(productDetails);
+
+            log.info("Product updated successfully in MongoDB");
             log.info("main task in thread: {}", Thread.currentThread().getName());
 
             kafkaProducerService.sendPriceChangeMessage(productDetails);
